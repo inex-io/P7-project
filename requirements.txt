@@ -5,6 +5,5 @@ pandas
 plotly
 dash
 pickle5
-pyarrow==7.0.0
-io
 shap
+pyarrow==7.0.0
