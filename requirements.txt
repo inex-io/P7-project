@@ -4,7 +4,7 @@ django-heroku
 pandas
 plotly
 dash
-pickle
+pickle5
 pyarrow.parquet
 io
 shap
