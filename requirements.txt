@@ -1,9 +1,8 @@
-django
 gunicorn
-django-heroku
 pandas
 plotly
 dash
 pickle5
 shap
+json
 pyarrow==7.0.0
