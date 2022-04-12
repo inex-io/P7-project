@@ -4,3 +4,8 @@ django-heroku
 pandas
 plotly
 dash
+subprocess
+pickle
+pyarrow.parquet
+io
+shap
