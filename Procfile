@@ -1,1 +1,2 @@
-web: gunicorn P7-project.wsgi
+web: python app1.py runserver 0.0.0.0:5000
+
