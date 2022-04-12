@@ -5,6 +5,6 @@ pandas
 plotly
 dash
 pickle5
-pyarrow.parquet
+pyarrow
 io
 shap
