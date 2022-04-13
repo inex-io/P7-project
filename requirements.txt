@@ -6,7 +6,6 @@ pickle5
 shap
 numpy
 sklearn
-gc
 time
 contextlib
 lightgbm
@@ -15,3 +14,4 @@ re
 sys
 pyarrow==7.0.0
 math
+gc
