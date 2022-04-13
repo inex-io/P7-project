@@ -6,12 +6,12 @@ pickle5
 shap
 numpy
 sklearn
-contextlib
 lightgbm
-warnings
-re
-sys
 pyarrow==7.0.0
 math
 gc
 time
+contextlib
+warnings
+re
+sys
