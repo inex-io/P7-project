@@ -140,7 +140,8 @@ def update_output_div(n_clicks, input_value, threshold_value):
     payment_rate = month_to_yymm(int(1/df_input.iloc[0,5]*12))
     days_birth = (days_to_yymm(df_input.iloc[0,6]))
     days_employed = (days_to_yymm(df_input.iloc[0,7]))
-    force_plot_1 = force_plot_call()
+    #force_plot_1 = force_plot_call()
+    force_plot_1 = 'graphique non affiché'
     #summary_plot_graph_1 = summary_plot_call()
     score_graph = gauge_graph(df_input.iloc[0,1], df_train_graph.iloc[0,9], df_train_graph.iloc[0,10], df_train_graph.iloc[0,11])
     ext_source_1 = gauge_graph(df_input.iloc[0,8], df_train_graph.iloc[0,0], df_train_graph.iloc[0,1],df_train_graph.iloc[0,2])
