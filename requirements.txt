@@ -8,10 +8,4 @@ numpy
 sklearn
 lightgbm
 pyarrow==7.0.0
-math
-gc
-time
-contextlib
-warnings
-re
-sys
+gc==20.0.2
