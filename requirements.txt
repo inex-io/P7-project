@@ -4,7 +4,6 @@ plotly
 dash
 pickle5
 shap
-math
 numpy
 sklearn
 gc
@@ -15,3 +14,4 @@ warnings
 re
 sys
 pyarrow==7.0.0
+math
