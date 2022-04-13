@@ -182,7 +182,7 @@ def month_to_yymm (month_i):
 def force_plot_call():
     shap.initjs()
     force_plot_graph_1 = pickle.load(open('force_graph_1', 'rb'))
-    shap_html = f"<head>{shap.initjs()}</head><body>{force_plot_graph_1.html()}</body>"
+    shap_html = f"<head></head><body>{force_plot_graph_1.html()}</body>"
     
     return html.Iframe(srcDoc=shap_html,
                        style={"width": "100%", "height": "200px", "border": 0})
