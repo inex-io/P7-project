@@ -3,7 +3,7 @@ pandas
 plotly
 dash
 pickle5
-shap
+shap==0.40.0
 numpy
 sklearn
 lightgbm
