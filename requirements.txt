@@ -8,4 +8,3 @@ numpy
 sklearn
 lightgbm
 pyarrow==7.0.0
-gc==20.0.2
