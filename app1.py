@@ -214,7 +214,7 @@ def force_plot_call(df_test, input_value):
     X_df_test = df_test[feats][df_test['SK_ID_CURR']== pd.to_numeric(input_value)]
     X_test = X_df_test.iloc[:, 1:]
    
-    force_plot_graph_1 = shap.force_plot(explainer_0, shap_values[0][0, 0:9], X_test.iloc[0, 0:9].index, matplotlib= False)
+    force_plot_graph_1 = shap.force_plot(explainer_0, shap_values[0][0, 0:9], X_test.iloc[0, 0:9].index, matplotlib= True)
 
     return force_plot_graph_1
 
