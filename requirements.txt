@@ -9,3 +9,4 @@ sklearn
 lightgbm
 pyarrow==7.0.0
 matplotlib
+ipython
