@@ -7,12 +7,18 @@ import pyarrow.parquet as parquet
 import pickle
 import io
 import shap
+import numpy as np
 #import matplotlib.pyplot as plt
 
 
 
 app = Dash(__name__)
 server = app.server
+
+feature_importance_df = pd.read_pickle('feat_importance.pickle')
+feature_importance = feature_importance_df[["feature", "importance"]].groupby("feature").mean().sort_values(by="importance", ascending=False)[:10].index
+
+
 
 app.layout = html.Div([
     html.H1('Dashboard client', style={"text-align": "center"}),
@@ -58,13 +64,29 @@ app.layout = html.Div([
 
         ]),
         html.Label('Informations client en relation avec la décision :'),
-        html.Div(
+        dcc.Graph(
             id='force-plot'
             ),
-        html.Br(),
-        #html.Div(
-         #   id='summary-plot'
-          #  ),       
+        html.Div([
+                html.Br(),
+                html.Label('Client vs dossiers approuvé :'),
+                dcc.Dropdown(
+                    feature_importance,
+                    'DAYS_BIRTH',
+                    id='summary-x'
+                ),
+                dcc.Dropdown(
+                    feature_importance,
+                    'PAYMENT_RATE',
+                    id='summary-y'
+                ),
+                #html.Button(id='refresh-button', n_clicks=0, children='Submit'),
+                dcc.Graph(
+                    id='summary-plot'
+                    ),
+                ],
+                style={'width': '49%', 'display': 'inline-block'}
+                ),      
 
     ]),
     html.Div([
@@ -104,8 +126,8 @@ app.layout = html.Div([
     Output(component_id='payment-rate', component_property='children'),
     Output(component_id='days-birth', component_property='children'),
     Output(component_id='days-employed', component_property='children'),
-    Output(component_id='force-plot', component_property='children'),
-    #Output(component_id='summary-plot', component_property='children'),
+    Output(component_id='force-plot', component_property='figure'),
+    Output(component_id='summary-plot', component_property='figure'),
     Output(component_id='score-graph', component_property='figure'),
     Output(component_id='EXT-SOURCE-1', component_property='figure'),
     Output(component_id='EXT-SOURCE-2', component_property='figure'),
@@ -113,11 +135,12 @@ app.layout = html.Div([
     Input('submit-button-state', 'n_clicks'),
     State(component_id='loan-id', component_property='value'),
     State('threshold-slider', 'value'),
-
+    State('summary-x', 'value'),
+    State('summary-y', 'value'),
 )
-def update_output_div(n_clicks, input_value, threshold_value):
+def update_output_div(n_clicks, input_value, threshold_value, summary_x, summary_y):
     #input_value = '100005'
-    df_input, df_train_graph = read_file(input_value)
+    df_input, df_train_graph, df_train = read_file(input_value)
     #df_input.iloc[0,1] = 1
     threshold = threshold_value
     #threshold =0.7
@@ -140,20 +163,24 @@ def update_output_div(n_clicks, input_value, threshold_value):
     payment_rate = month_to_yymm(int(1/df_input.iloc[0,5]*12))
     days_birth = (days_to_yymm(df_input.iloc[0,6]))
     days_employed = (days_to_yymm(df_input.iloc[0,7]))
-    #force_plot_1 = force_plot_call()
-    force_plot_1 = 'graphique non affiché'
+    force_plot_1 = force_plot_call(df_input, input_value)
+    #force_plot_1 = 'graphique non affiché'
     #summary_plot_graph_1 = summary_plot_call()
+    #summary_plot = px.scatter(x=[0,1,2,3], y=[0,1,2,3])    
     score_graph = gauge_graph(df_input.iloc[0,1], df_train_graph.iloc[0,9], df_train_graph.iloc[0,10], df_train_graph.iloc[0,11])
     ext_source_1 = gauge_graph(df_input.iloc[0,8], df_train_graph.iloc[0,0], df_train_graph.iloc[0,1],df_train_graph.iloc[0,2])
     ext_source_2 = gauge_graph(df_input.iloc[0,9], df_train_graph.iloc[0,3], df_train_graph.iloc[0,4],df_train_graph.iloc[0,5])
     ext_source_3 = gauge_graph(df_input.iloc[0,10], df_train_graph.iloc[0,6], df_train_graph.iloc[0,7], df_train_graph.iloc[0,8])
-
+    dff_train = pd.concat([df_train, df_input], axis=0)
+    dff_train['TARGET'] = dff_train['TARGET'].astype('str')
+    summary_plot= px.scatter(dff_train, x=summary_x, y=summary_y, color= 'TARGET')
 
         #return [df_input.iloc[:,i].tolist() for i in range (1,df_input.T.index.size)]
-    return return_value, colour, target, gender, amt_credit, amt_annuity, payment_rate, days_birth, days_employed, force_plot_1, score_graph, ext_source_1, ext_source_2, ext_source_3
+    return return_value, colour, target, gender, amt_credit, amt_annuity, payment_rate, days_birth, days_employed, force_plot_1, summary_plot, score_graph, ext_source_1, ext_source_2, ext_source_3
 
 def read_file(input_value):
     df_train_graph = pd.read_parquet('train_df_graph.parquet')
+    df_train = pd.read_parquet('aggregate_database_train.parquet')
     #input_value = '100005'
     predict_exec = subprocess.run(['python3', 'P7_script_3.py'], input= input_value.encode('utf-8'), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
     #df_short= pd.read_pickle('loan_results.pickle')
@@ -163,7 +190,7 @@ def read_file(input_value):
     col_sel = ['SK_ID_CURR', 'TARGET', 'CODE_GENDER', 'AMT_CREDIT', 'AMT_ANNUITY', 'PAYMENT_RATE', 'DAYS_BIRTH', 'DAYS_EMPLOYED', 'EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3']
     df_short= df_short[col_sel]
     
-    return df_short, df_train_graph
+    return df_short, df_train_graph, df_train
 
 def days_to_yymm (days_i):
     #days = 197
@@ -179,13 +206,17 @@ def month_to_yymm (month_i):
     month = int((month_x %year))
     return f'{year} ans et {month} mois'
 
-def force_plot_call():
+def force_plot_call(df_test, input_value):
     shap.initjs()
-    force_plot_graph_1 = pickle.load(open('force_graph_1', 'rb'))
-    shap_html = f"<head></head><body>{force_plot_graph_1.html()}</body>"
-    
-    return html.Iframe(srcDoc=shap_html,
-                       style={"width": "100%", "height": "200px", "border": 0})
+    explainer_0 = pickle.load(open("explainer_0.dat", "rb"))
+    shap_values = pickle.load(open("shap_values_train.dat", "rb"))
+    feats = [f for f in df_test.columns if f not in ['TARGET','SK_ID_BUREAU','SK_ID_PREV','index']]
+    X_df_test = df_test[feats][df_test['SK_ID_CURR']== pd.to_numeric(input_value)]
+    X_test = X_df_test.iloc[:, 1:]
+   
+    force_plot_graph_1 = shap.force_plot(explainer_0, shap_values[0][0, 0:9], X_test.iloc[0, 0:9].index, matplotlib= False)
+
+    return force_plot_graph_1
 
 def summary_plot_call():
     shap.initjs()
