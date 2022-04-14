@@ -8,3 +8,4 @@ numpy
 sklearn
 lightgbm
 pyarrow==7.0.0
+matplotlib
