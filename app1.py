@@ -8,6 +8,7 @@ import pickle
 import io
 import shap
 import numpy as np
+import json
 #import matplotlib.pyplot as plt
 
 
@@ -64,7 +65,7 @@ app.layout = html.Div([
 
         ]),
         html.Label('Informations client en relation avec la décision :'),
-        dcc.Graph(
+        html.Div(
             id='force-plot'
             ),
         html.Div([
@@ -126,7 +127,7 @@ app.layout = html.Div([
     Output(component_id='payment-rate', component_property='children'),
     Output(component_id='days-birth', component_property='children'),
     Output(component_id='days-employed', component_property='children'),
-    Output(component_id='force-plot', component_property='figure'),
+    Output(component_id='force-plot', component_property='children'),
     Output(component_id='summary-plot', component_property='figure'),
     Output(component_id='score-graph', component_property='figure'),
     Output(component_id='EXT-SOURCE-1', component_property='figure'),
@@ -214,9 +215,11 @@ def force_plot_call(df_test, input_value):
     X_df_test = df_test[feats][df_test['SK_ID_CURR']== pd.to_numeric(input_value)]
     X_test = X_df_test.iloc[:, 1:]
    
-    force_plot_graph_1 = shap.force_plot(explainer_0, shap_values[0][0, 0:9], X_test.iloc[0, 0:9].index, matplotlib= True)
-
-    return force_plot_graph_1
+    force_plot_graph_1 = shap.force_plot(explainer_0, shap_values[0][0, 0:9], X_test.iloc[0, 0:9].index, matplotlib= False)
+    shap_html = f"<head>{shap.getjs()}</head><body>{force_plot_graph_1.html()}</body>"
+    
+    return html.Iframe(srcDoc=shap_html,
+                       style={"width": "100%", "height": "200px", "border": 0})
 
 def summary_plot_call():
     shap.initjs()
