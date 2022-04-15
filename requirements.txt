@@ -9,5 +9,4 @@ sklearn
 lightgbm
 pyarrow==7.0.0
 matplotlib
-json==22.0.4
 ipython
