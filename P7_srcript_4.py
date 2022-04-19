@@ -20,7 +20,7 @@ from shap.plots._force_matplotlib import draw_additive_plot
 
 
 app = Dash(__name__)
-#server = app.server
+server = app.server
 
 # Fetch feature importance
 feature_importance_df = pd.read_pickle('feat_importance.pickle')
