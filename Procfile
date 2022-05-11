@@ -1,1 +1,1 @@
-web: gunicorn P7_script_4:server
+web: gunicorn app0:application
