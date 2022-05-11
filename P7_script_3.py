@@ -4,7 +4,6 @@
 ######### description de l'importance locale des variables ######
 #################################################################
 
-
 import pandas as pd
 import math
 import numpy as np
@@ -28,12 +27,16 @@ import pickle
 import sys
 import pyarrow.parquet as parquet
 import shap
+from flask import Flask, request, jsonify
+from dash import Dash
+import dash_bootstrap_components as dbc
 
 
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_colwidth', None)
+
 
 
 @contextmanager
@@ -43,11 +46,10 @@ def timer(title):
     print("{} - done in {:.0f}s".format(title, time.time() - t0))
 
 # Fetch test data to get loan candidates details
-def read_test_input(loan_id):
-    loan_id = '100005' # use for debug purpose
+def read_test_input():
     df_test = pd.read_parquet('aggregate_database_test.parquet')
     feats = [f for f in df_test.columns if f not in ['TARGET','SK_ID_BUREAU','SK_ID_PREV','index']]
-    X_df_test = df_test[feats][df_test['SK_ID_CURR']== pd.to_numeric(loan_id)]
+    X_df_test = df_test[feats]
     gc.collect()
 
     return X_df_test
@@ -60,17 +62,10 @@ def load_model():
 
     return clf_fitted, feature_importance_df
 
-# Function to display force plot graph
-def force_plot (X_test):
-    explainer_0 = pickle.load(open("explainer_0.dat", "rb"))
-    shap_values = pickle.load(open("shap_values_train.dat", "rb"))
-    force_plot_graph_1 = shap.force_plot(explainer_0, shap_values[0][0,0:10], X_test.iloc[0, 0:10], matplotlib= False)
-    
-    return force_plot_graph_1
 
-def main(loan_id, debug = False):
+def main(debug = False):
     
-    X_test_df = read_test_input(loan_id)
+    X_test_df = read_test_input()
     X_test = X_test_df.iloc[:, 1:]
     gc.collect()
         
@@ -78,21 +73,21 @@ def main(loan_id, debug = False):
     
     y_predict = clf.predict_proba(X_test)
     loan_df = X_test_df
-    loan_df['TARGET'] = y_predict[0][0]
-    force_plot_graph_1 = force_plot (X_test)
-    pickle.dump(force_plot_graph_1, open('force_graph_1', 'wb'))
-   
+    loan_df['TARGET'] = np.array(pd.DataFrame(y_predict).iloc[:,0])
+    
+    gc.collect()
 
     return loan_df
         
-    gc.collect()
 
 
 if __name__ == "__main__":
     #loan_id = '100005' # for debug purpose
 
     # Get through buffer from script 3 the loan id
-    loan_id = sys.stdin.buffer.read()
-    loan_df = main(loan_id) 
+        #loan_id = sys.stdin.buffer.read()
+        loan_df = main() 
+        loan_df.to_parquet('loan_df.parquet')
     # Pass through buffer to script 4 scoring results for the loan id 
-    sys.stdout.buffer.write(loan_df.to_parquet())
+        #sys.stdout.buffer.write(loan_df.to_parquet())
+
